@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:navigation_app/services/api_service.dart';
+import '../services/api_service.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
