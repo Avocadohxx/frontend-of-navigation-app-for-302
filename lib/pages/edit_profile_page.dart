@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 
@@ -20,6 +22,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late TextEditingController _emailController;
   bool _isLoading = false;
   File? _selectedImage;
+  Uint8List? _webImage;
   final _picker = ImagePicker();
   final String _baseUrl = 'http://192.168.2.9:3000';
 
@@ -59,21 +62,34 @@ class _EditProfilePageState extends State<EditProfilePage> {
       imageQuality: 80,
     );
     if (pickedFile != null) {
-      setState(() => _selectedImage = File(pickedFile.path));
-      await _uploadAvatar();
+      if (kIsWeb) {
+        // For web: read bytes
+        final bytes = await pickedFile.readAsBytes();
+        setState(() => _webImage = bytes);
+      } else {
+        // For mobile: use File
+        setState(() => _selectedImage = File(pickedFile.path));
+      }
+      // Don't upload immediately, just show preview
     }
   }
 
-  // Upload avatar to Aliyun OSS
-  Future<void> _uploadAvatar() async {
-    if (_selectedImage == null) return;
+  // Upload avatar to Aliyun OSS (returns new avatar URL or null on error)
+  Future<String?> _uploadAvatar() async {
+    if (_selectedImage == null && _webImage == null) return null;
 
-    setState(() => _isLoading = true);
     try {
       final token = await _getToken();
       if (token == null) throw Exception('Please log in first');
 
-      final fileExt = _selectedImage!.path.split('.').last.toLowerCase();
+      String fileExt;
+      if (kIsWeb) {
+        // For web, default to jpg
+        fileExt = 'jpg';
+      } else {
+        fileExt = _selectedImage!.path.split('.').last.toLowerCase();
+      }
+
       if (!['png', 'jpg', 'jpeg', 'webp'].contains(fileExt)) {
         throw Exception('Only png, jpg, jpeg, webp formats are supported');
       }
@@ -94,10 +110,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
       final newAvatarUrl = signatureData['publicUrl'];
 
       // Upload image directly to OSS
+      Uint8List imageBytes;
+      if (kIsWeb) {
+        imageBytes = _webImage!;
+      } else {
+        imageBytes = await _selectedImage!.readAsBytes();
+      }
+
       final uploadResponse = await http.put(
         Uri.parse(presignedUrl),
         headers: {'Content-Type': 'image/$fileExt'},
-        body: await _selectedImage!.readAsBytes(),
+        body: imageBytes,
       );
 
       if (uploadResponse.statusCode != 200 && uploadResponse.statusCode != 204) {
@@ -117,25 +140,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         }),
       );
 
-      // Refresh avatar locally
-      setState(() {
-        widget.user.avatarUrl = newAvatarUrl;
-        _selectedImage = null;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Avatar uploaded successfully')),
-        );
-      }
+      return newAvatarUrl;
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: ${e.toString()}')),
-        );
-      }
-    } finally {
-      setState(() => _isLoading = false);
+      // Return null on error, don't show error message here
+      return null;
     }
   }
 
@@ -146,6 +154,16 @@ class _EditProfilePageState extends State<EditProfilePage> {
     try {
       final token = await _getToken();
       if (token == null) throw Exception('Please log in first');
+
+      String? newAvatarUrl;
+
+      // Upload avatar first if there's a new image selected
+      if (_selectedImage != null || _webImage != null) {
+        newAvatarUrl = await _uploadAvatar();
+        if (newAvatarUrl == null) {
+          throw Exception('Failed to upload avatar');
+        }
+      }
 
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/update-profile'),
@@ -168,7 +186,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         userName: widget.user.userName,
         phoneNum: _phoneController.text.trim().isEmpty ? 'Not set' : _phoneController.text.trim(),
         email: _emailController.text.trim().isEmpty ? 'Not set' : _emailController.text.trim(),
-        avatarUrl: widget.user.avatarUrl,
+        avatarUrl: newAvatarUrl ?? widget.user.avatarUrl,
         lastLoginTime: widget.user.lastLoginTime,
       );
 
@@ -235,8 +253,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   border: Border.all(color: theme.colorScheme.primary, width: 2),
                 ),
                 child: ClipOval(
-                  child: _selectedImage != null
-                      ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                  child: _selectedImage != null || _webImage != null
+                      ? (kIsWeb && _webImage != null
+                          ? Image.memory(_webImage!, fit: BoxFit.cover)
+                          : Image.file(_selectedImage!, fit: BoxFit.cover))
                       : Image.network(
                     widget.user.avatarUrl,
                     fit: BoxFit.cover,

@@ -1,6 +1,6 @@
 {
-    "name": "version4",
-    "short_name": "version4",
+    "name": "pages",
+    "short_name": "pages",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

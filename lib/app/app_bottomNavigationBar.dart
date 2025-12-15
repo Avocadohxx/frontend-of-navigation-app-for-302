@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../main.dart';
 
 class AppBottomNavigationBar extends StatelessWidget {
   final Function(int index) onTabSelected;
@@ -8,6 +9,9 @@ class AppBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appSettings = AppSettingsProvider.of(context);
+    final isZh = appSettings.language == 'zh';
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -30,10 +34,12 @@ class AppBottomNavigationBar extends StatelessWidget {
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.contact_phone), label: "Contacts"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        items: [
+          BottomNavigationBarItem(icon: const Icon(Icons.home), label: isZh ? "首页" : "Home"),
+          BottomNavigationBarItem(icon: const Icon(Icons.map), label: isZh ? "地图" : "Map"),
+          BottomNavigationBarItem(icon: const Icon(Icons.meeting_room), label: isZh ? "教室" : "Room"),
+          BottomNavigationBarItem(icon: const Icon(Icons.contact_phone), label: isZh ? "联系人" : "Contacts"),
+          BottomNavigationBarItem(icon: const Icon(Icons.person), label: isZh ? "个人" : "Profile"),
         ],
         onTap: onTabSelected,
       ),

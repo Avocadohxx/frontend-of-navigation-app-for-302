@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import '../../../services/api_service.dart';
 import '../../app/bottom_nav_controller.dart';
 import '../../models/user_model.dart';
 import '../../../services/local_storage_service.dart';
@@ -28,39 +25,34 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = null;
     });
 
-    try {
-      final response = await http.post(
-        Uri.parse('${BackendApiService.baseUrl}/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'user_name': _usernameController.text.trim(),
-          'password': _passwordController.text.trim(),
-        }),
-      );
+    // 直接创建用户模型，跳过API验证
+    final userModel = UserModel(
+      id: 1,
+      userName: _usernameController.text.trim().isEmpty ? 'User' : _usernameController.text.trim(),
+      email: 'user@example.com',
+      phoneNum: '0000000000',
+      avatarUrl: 'https://naviapp-shanghai-83857.oss-cn-shanghai.aliyuncs.com/avatar/default_avatar.jpg',
+      lastLoginTime: DateTime.now().toIso8601String().substring(0, 16),
+    );
+    
+    // 保存模拟的token和用户信息
+    await LocalStorageService.saveLoginInfo('mock_token', {
+      'id': 1,
+      'user_name': userModel.userName,
+      'email': userModel.email,
+      'phone_num': userModel.phoneNum,
+      'avatar_url': userModel.avatarUrl,
+      'last_login_time': userModel.lastLoginTime,
+    });
 
-      final result = json.decode(response.body);
-      if (response.statusCode == 200 && result['success']) {
-        final userModel = UserModel.fromJson(result['data']);
-        final token = result['data']['token'];
-        // 3. 保存token和用户信息到本地存储
-        await LocalStorageService.saveLoginInfo(
-          token,
-          result['data'], // 完整的用户数据（包含last_login_time等）
-        );
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => BottomNavController(loggedInUser: userModel)),
-          );
-        }
-      } else {
-        setState(() => _errorMessage = result['message'] ?? 'Login failed. Please check your credentials.');
-      }
-    } catch (e) {
-      setState(() => _errorMessage = 'Network error: ${e.toString()}');
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => BottomNavController(loggedInUser: userModel)),
+      );
     }
+
+    setState(() => _isLoading = false);
   }
 
   @override

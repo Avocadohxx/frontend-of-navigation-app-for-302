@@ -57,6 +57,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
             // edit
             _buildEditButton(theme, context),
+            const SizedBox(height: 16),
+
+            // logout button
+            _buildLogoutButton(theme, context),
           ],
         ),
       ),
@@ -74,7 +78,7 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             image: DecorationImage(
-              image: NetworkImage(_currentUser.avatarUrl),
+              image: AssetImage(_currentUser.avatarUrl),
               fit: BoxFit.cover,
             ),
             border: Border.all(color: colorScheme.primary, width: 2),
@@ -150,6 +154,33 @@ class _ProfilePageState extends State<ProfilePage> {
             value: _currentUser.lastLoginTime,
             textTheme: textTheme,
           ),
+          const SizedBox(height: 16),
+
+          // 学号
+          _buildInfoItem(
+            icon: Icons.badge_outlined,
+            label: 'Student ID',
+            value: '2021' + (_currentUser.id % 10000).toString().padLeft(4, '0'),
+            textTheme: textTheme,
+          ),
+          const SizedBox(height: 16),
+
+          // 学院
+          _buildInfoItem(
+            icon: Icons.school_outlined,
+            label: 'School',
+            value: 'School of Computer Science',
+            textTheme: textTheme,
+          ),
+          const SizedBox(height: 16),
+
+          // 年级
+          _buildInfoItem(
+            icon: Icons.trending_up_outlined,
+            label: 'Grade',
+            value: 'Junior (3rd Year)',
+            textTheme: textTheme,
+          ),
         ],
       ),
     );
@@ -215,5 +246,59 @@ class _ProfilePageState extends State<ProfilePage> {
     if (result != null && result is UserModel) {
       _updateUserInfo(result);
     }
+  }
+
+  // 登出按钮
+  Widget _buildLogoutButton(ThemeData theme, BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton(
+        onPressed: () => _handleLogout(context),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: Colors.red.shade400, width: 2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 0,
+        ),
+        child: Text(
+          'Logout',
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: Colors.red.shade400,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 处理登出
+  void _handleLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // 关闭对话框
+                Navigator.of(context).pop();
+                // 返回到登录页面，清除所有导航栈
+                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+              },
+              child: Text(
+                'Logout',
+                style: TextStyle(color: Colors.red.shade400),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

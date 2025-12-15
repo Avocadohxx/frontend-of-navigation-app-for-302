@@ -2,7 +2,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class BackendApiService {
-  //static const String _backendIp = '192.168.2.9';
   // Android模拟器访问宿主机的特殊IP地址
   static const String _backendIp = '10.0.2.2';
   static const String _backendPort = '3000';

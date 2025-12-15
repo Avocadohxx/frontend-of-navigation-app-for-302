@@ -22,7 +22,7 @@ class UserModel {
       userName: json['user_name'] ?? 'Unknown User',
       phoneNum: json['phone_num'] ?? 'Not set',
       email: json['email'] ?? 'Not set',
-      avatarUrl: json['avatar_url'] ?? 'https://naviapp-shanghai-83857.oss-cn-shanghai.aliyuncs.com/avatar/default_avatar.jpg',
+      avatarUrl: json['avatar_url'] ?? 'assets/images/111.png',
       lastLoginTime: json['last_login_time'] != null
           ? DateTime.parse(json['last_login_time']).toString().substring(0, 16)
           : 'Never logged in',
