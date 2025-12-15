@@ -19,9 +19,10 @@ dependencies:
   http: ^1.5.0
   image_picker: ^1.0.7 #用户可以从本地图库选择图片
   cupertino_icons: ^1.0.8 #图标，模仿ios风格
-  amap_flutter_location: ^3.0.0 # 使用高德地图 Flutter 插件中的位置服务功能
-  amap_flutter_map: ^3.0.0 # 高德地图 Flutter 插件的地图显示功能
-  amap_flutter_base: ^3.0.0 # 高德地图 Flutter 插件的基础功能
+  # 临时注释高德地图插件，解决与Flutter 3.38兼容性问题
+  # amap_flutter_location: ^3.0.0 # 使用高德地图 Flutter 插件中的位置服务功能
+  # amap_flutter_map: ^3.0.0 # 高德地图 Flutter 插件的地图显示功能
+  # amap_flutter_base: ^3.0.0 # 高德地图 Flutter 插件的基础功能
   permission_handler: ^12.0.1 # 请求和检查应用权限
   dio: ^4.0.6
   url_launcher: ^6.1.7 # 启动url，打开网页等

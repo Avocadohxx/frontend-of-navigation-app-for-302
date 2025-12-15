@@ -30,31 +30,24 @@ android {
         versionName = flutter.versionName
     }
 
-    signingConfigs {
-        create("release") { // 只保留 release 配置
-            // 发布版本的签名配置
-            storeFile = file("../amap.jks") // 确保路径用双引号包围
-            keyAlias = "amap"
-            storePassword = "android"
-            keyPassword = "android"
-        }
-        // 移除下面这部分 create("debug") { ... }
-        // create("debug") { // 调试版本的签名配置
-        //     storeFile = file("../amap.jks") // 系统默认 debug keystore 更安全
-        //     keyAlias = "amap"
-        //     storePassword = "android"
-        //     keyPassword = "android"
-        // }
-    }
+    // 临时注释签名配置，因为amap.jks文件不存在
+    // signingConfigs {
+    //     create("release") { // 只保留 release 配置
+    //         // 发布版本的签名配置
+    //         storeFile = file("../amap.jks") // 确保路径用双引号包围
+    //         keyAlias = "amap"
+    //         storePassword = "android"
+    //         keyPassword = "android"
+    //     }
+    // }
 
     buildTypes {
         getByName("release") {
-            // 使用您自定义的 release 签名配置
-            signingConfig = signingConfigs.getByName("release")
+            // 临时注释自定义签名配置
+            // signingConfig = signingConfigs.getByName("release")
         }
         getByName("debug") {
             // 使用系统默认的 debug 签名配置，通常不需要显式设置
-            // signingConfig = signingConfigs.getByName("debug") // 这行可以注释掉或删除
         }
     }
 }
@@ -64,9 +57,10 @@ flutter {
 }
 
 dependencies {
-    implementation("com.amap.api:location:5.2.0")
-    implementation("com.amap.api:3dmap:8.1.0")
-    implementation("com.amap.api:search:5.0.0")
+    // 临时注释高德地图原生SDK依赖
+    // implementation("com.amap.api:location:5.2.0")
+    // implementation("com.amap.api:3dmap:8.1.0")
+    // implementation("com.amap.api:search:5.0.0")
     // 使用标准库依赖，让插件管理版本
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
 }
